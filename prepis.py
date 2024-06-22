@@ -9,7 +9,7 @@ from openai.types import completion
 """
 Toto je platený prístup
 treb upraviť názov premennej v .env aby sa nahral kluc api
-works on MSI NB
+
 """
 # Load environment variables from .env file
 load_dotenv()
