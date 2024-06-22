@@ -27,6 +27,6 @@ def download_audio(url, output_dir):
 
 
 video_url = 'https://www.youtube.com/watch?v=URHZSttbje4'
-output_path = 'data/bilingual.mp4'  # Customize the output filename
+output_path = 'data/bilingual.mp3'  # Customize the output filename
 
 download_audio(video_url, output_path)
