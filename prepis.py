@@ -1,10 +1,16 @@
 from docx import Document
 from dotenv import load_dotenv
 import os
-
 from openai import OpenAI
 from openai.types import completion
 
+
+
+"""
+Toto je platený prístup
+treb upraviť názov premennej v .env aby sa nahral kluc api
+works on MSI NB
+"""
 # Load environment variables from .env file
 load_dotenv()
 
@@ -15,13 +21,11 @@ if not api_key:
 
 client = OpenAI(api_key=api_key)
 
-
 def transcribe_audio(audio_file_path):
     with open(audio_file_path, 'rb') as audio_file:
-#        transcription = client.audio.transcriptions.create("whisper-1", audio_file)
         transcription = client.audio.transcriptions.create(model="whisper-1", file=audio_file)
-    return transcription['text']
-
+    transcription_text = transcription.text  # Access the text attribute directly
+    return transcription_text
 
 def meeting_minutes(transcription):
     abstract_summary = abstract_summary_extraction(transcription)
@@ -34,7 +38,6 @@ def meeting_minutes(transcription):
         'action_items': action_items,
         'sentiment': sentiment
     }
-
 
 def abstract_summary_extraction(transcription):
     response = client.chat.completions.create(
@@ -51,12 +54,12 @@ def abstract_summary_extraction(transcription):
             }
         ]
     )
-    return completion.choices[0].message.content
-
+    return response.choices[0].message.content
 
 def key_points_extraction(transcription):
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4",
+        temperature=0,
         messages=[
             {
                 "role": "system",
@@ -68,12 +71,12 @@ def key_points_extraction(transcription):
             }
         ]
     )
-    return response['choices'][0]['message']['content']
-
+    return response.choices[0].message.content
 
 def action_item_extraction(transcription):
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4",
+        temperature=0,
         messages=[
             {
                 "role": "system",
@@ -85,12 +88,12 @@ def action_item_extraction(transcription):
             }
         ]
     )
-    return response['choices'][0]['message']['content']
-
+    return response.choices[0].message.content
 
 def sentiment_analysis(transcription):
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4",
+        temperature=0,
         messages=[
             {
                 "role": "system",
@@ -102,20 +105,16 @@ def sentiment_analysis(transcription):
             }
         ]
     )
-    return response['choices'][0]['message']['content']
-
+    return response.choices[0].message.content
 
 def save_as_docx(minutes, filename):
     doc = Document()
     for key, value in minutes.items():
-        # Replace underscores with spaces and capitalize each word for the heading
         heading = ' '.join(word.capitalize() for word in key.split('_'))
         doc.add_heading(heading, level=1)
         doc.add_paragraph(value)
-        # Add a line break between sections
         doc.add_paragraph()
     doc.save(filename)
-
 
 # Example usage
 audio_file_path = "data/as1.mp3"
@@ -123,4 +122,4 @@ transcription = transcribe_audio(audio_file_path)
 minutes = meeting_minutes(transcription)
 print(minutes)
 
-save_as_docx(minutes, 'meeting_minutes.docx')
+save_as_docx(minutes, 'data/meeting_minutes.docx')
